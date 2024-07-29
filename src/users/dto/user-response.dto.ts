@@ -1,4 +1,5 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { Product } from 'src/products/entities/product.entity'
 
 export class UserResponseDto {
   @Expose()
@@ -15,4 +16,8 @@ export class UserResponseDto {
 
   @Expose()
   address: string;
+
+  @Expose()
+  @Type(() => Product)
+  products: Product[];
 }
