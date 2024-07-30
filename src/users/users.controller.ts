@@ -22,6 +22,11 @@ export class UsersController {
     return this.usersService.findOne(userId);
   }
 
+  @Get(':id/with-password')
+  async findOneWithPassword(@Param('id') id: number) {
+    return this.usersService.findOneWithPassword(id);
+  }
+
   @Post()
   async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.usersService.create(createUserDto);

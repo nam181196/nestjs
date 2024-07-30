@@ -38,7 +38,7 @@ export class UsersService {
       throw new BadRequestException('Mật khẩu yếu, hãy chọn một mật khẩu mạnh hơn');
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.password, this.saltRounds);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, this.saltRounds); 
 
     const newUser = this.usersRepository.create({
       ...createUserDto,
@@ -48,20 +48,29 @@ export class UsersService {
     });
 
     const savedUser = await this.usersRepository.save(newUser);
-    return plainToInstance(UserResponseDto, savedUser, { excludeExtraneousValues: true });
+    return plainToInstance(UserResponseDto, savedUser);
   }
 
   async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.usersRepository.find({ relations: ['products'] });
-    return plainToInstance(UserResponseDto, users, { excludeExtraneousValues: true });
+    const users = await this.usersRepository.find();
+    return plainToInstance(UserResponseDto, users);
   }
 
   async findOne(id: number): Promise<UserResponseDto> {
-    const user = await this.usersRepository.findOne({ where: { id }, relations: ['products'] });
+    const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       throw new BadRequestException('User not found');
     }
-    return plainToInstance(UserResponseDto, user, { excludeExtraneousValues: true });
+    return plainToInstance(UserResponseDto, user);
+  }
+
+  async findOneWithPassword(id: number): Promise<User> {
+    // Sử dụng createQueryBuilder để thêm trường password vào kết quả
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password') // Chỉ định rằng chúng ta muốn chọn trường password
+      .where('user.id = :id', { id })
+      .getOne();
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {

@@ -20,4 +20,8 @@ export class UserResponseDto {
   @Expose()
   @Type(() => Product)
   products: Product[];
+
+  constructor(partial: Partial<UserResponseDto>) {
+    Object.assign(this, partial);
+  }
 }

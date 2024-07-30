@@ -14,12 +14,12 @@ export class User {
   @Column()
   email: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @Column()
   address: string;
 
-  @OneToMany(() => Product, product => product.owner)
+  @OneToMany(() => Product, product => product.ownerId)
   products: Product[];
 }

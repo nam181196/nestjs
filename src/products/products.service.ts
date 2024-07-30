@@ -1,10 +1,10 @@
-// src/products/service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create.dto';
 import { UpdateProductDto } from './dto/update.dto';
+
 
 @Injectable()
 export class ProductsService {
@@ -18,12 +18,15 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  findAll(): Promise<Product[]> {
-    return this.productsRepository.find();
+  async findAll(): Promise<Product[]> {
+    return this.productsRepository.find({ relations: ['ownerId'] });
   }
 
-  findOne(id: number): Promise<Product> {
-    return this.productsRepository.findOneBy({ id });
+  async findOne(id: number): Promise<Product> {
+    return this.productsRepository.findOne({
+      where: { id },
+      relations: ['ownerId']
+    });
   }
 
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
