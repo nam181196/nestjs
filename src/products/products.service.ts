@@ -5,7 +5,6 @@ import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create.dto';
 import { UpdateProductDto } from './dto/update.dto';
 
-
 @Injectable()
 export class ProductsService {
   constructor(
@@ -18,14 +17,34 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productsRepository.find({ relations: ['ownerId'] });
+  async findAll(ownerId: number): Promise<Product[]> {
+    return this.productsRepository.find({
+      where:{ ownerId: { id: ownerId}},
+      relations: ['ownerId'],
+      select: {
+        ownerId: {
+          id: true,
+          username: true,
+          email: true,
+          address: true,
+        },
+
+      },
+    });
   }
 
   async findOne(id: number): Promise<Product> {
     return this.productsRepository.findOne({
       where: { id },
-      relations: ['ownerId']
+      relations: ['ownerId'],
+      select: {
+        ownerId: {
+          id: true,
+          username: true,
+          email: true,
+          address: true,
+        },
+      },
     });
   }
 
@@ -36,5 +55,20 @@ export class ProductsService {
 
   async remove(id: number): Promise<void> {
     await this.productsRepository.delete(id);
+  }
+
+  async findByOwner(ownerId: number): Promise<Product[]> {
+    return this.productsRepository.find({
+      where: { ownerId: { id: ownerId } },
+      relations: ['ownerId'],
+      select: {
+        ownerId: {
+          id: true,
+          username: true,
+          email: true,
+          address: true,
+        },
+      },
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseInterceptors, ClassSerializerInterceptor, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create.dto';
 import { UpdateProductDto } from './dto/update.dto';
@@ -16,9 +16,15 @@ export class ProductsController {
   }
 
   @Get()
-  async findAll(): Promise<ProductResponseDto[]> {
-    const products = await this.productsService.findAll();
-    return products.map(product => new ProductResponseDto(product));
+  async findAll(@Query('ownerId') ownerId?: string): Promise<ProductResponseDto[]> {
+    const parsedOwnerId = ownerId ? parseInt(ownerId, 10) : undefined;
+    
+    if (ownerId && isNaN(parsedOwnerId)) {
+      throw new BadRequestException('Owner ID không hợp lệ');
+    }
+    const products = await this.productsService.findAll(parsedOwnerId);
+    
+    return products.map((product: Partial<ProductResponseDto>) => new ProductResponseDto(product));
   }
 
   @Get(':id')

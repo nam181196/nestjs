@@ -65,10 +65,9 @@ export class UsersService {
   }
 
   async findOneWithPassword(id: number): Promise<User> {
-    // Sử dụng createQueryBuilder để thêm trường password vào kết quả
     return this.usersRepository
       .createQueryBuilder('user')
-      .addSelect('user.password') // Chỉ định rằng chúng ta muốn chọn trường password
+      .addSelect('user.password')
       .where('user.id = :id', { id })
       .getOne();
   }
