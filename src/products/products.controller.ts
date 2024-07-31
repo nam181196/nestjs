@@ -18,12 +18,13 @@ export class ProductsController {
   @Get()
   async findAll(@Query('ownerId') ownerId?: string): Promise<ProductResponseDto[]> {
     const parsedOwnerId = ownerId ? parseInt(ownerId, 10) : undefined;
-    
+
     if (ownerId && isNaN(parsedOwnerId)) {
       throw new BadRequestException('Owner ID không hợp lệ');
     }
+
     const products = await this.productsService.findAll(parsedOwnerId);
-    
+
     return products.map((product: Partial<ProductResponseDto>) => new ProductResponseDto(product));
   }
 
