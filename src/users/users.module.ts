@@ -9,5 +9,6 @@ import { PasswordStrengthService } from './password-strength.service';
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
   providers: [UsersService, PasswordStrengthService],
+  exports: [UsersService],
 })
 export class UsersModule {}

@@ -59,23 +59,23 @@ export class UsersService {
   async findOne(id: number): Promise<UserResponseDto> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException('User không tồn tại');
     }
     return plainToInstance(UserResponseDto, user);
   }
 
-  async findOneWithPassword(id: number): Promise<User> {
+  async findOneWithPassword(username: string): Promise<User> {
     return this.usersRepository
       .createQueryBuilder('user')
       .addSelect('user.password')
-      .where('user.id = :id', { id })
+      .where('user.username = :username', { username })
       .getOne();
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('User không tồn tại');
     }
 
     if (updateUserDto.username) {
@@ -110,13 +110,13 @@ export class UsersService {
   async remove(id: number): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException('User không tồn tại');
     }
     await this.usersRepository.remove(user);
   }
 
   async validateUser(username: string, password: string): Promise<boolean> {
-    const user = await this.usersRepository.findOne({ where: { username: username.toLowerCase() } });
+    const user = await this.findOneWithPassword(username);
     if (!user) {
       return false;
     }

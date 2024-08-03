@@ -1,5 +1,5 @@
 import { Exclude, Expose, Type } from 'class-transformer';
-import { Product } from 'src/products/entities/product.entity'
+import { Product } from 'src/products/entities/product.entity';
 
 export class UserResponseDto {
   @Expose()
