@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { Role } from './entities/role.enum';
 
 @Controller('users')
 export class UsersController {
@@ -45,6 +46,16 @@ export class UsersController {
       throw new BadRequestException('ID không hợp lệ');
     }
     await this.usersService.update(userId, updateUserDto);
+  }
+
+  @Patch(':id/role')
+  @UseGuards(JwtAuthGuard)
+  async updateRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('role') role: Role
+  ) {
+    await this.usersService.updateRole(id, role);
+    return { message: 'Role cập nhật thành công' };
   }
 
   @UseGuards(JwtAuthGuard)

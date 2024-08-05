@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany} from 'typeorm';
 import { Product } from 'src/products/entities/product.entity'
+import { Role } from './role.enum';
 
 @Entity()
 @Unique(['username'])
@@ -22,4 +23,11 @@ export class User {
 
   @OneToMany(() => Product, product => product.ownerId)
   products: Product[];
+
+  @Column({
+    type: 'enum',
+    enum: Role,
+    default: Role.User,
+  })
+  role: Role;
 }

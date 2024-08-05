@@ -11,8 +11,7 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalGuards(new JwtAuthGuard());
-  
+
   await app.listen(3000);
 }
 bootstrap();

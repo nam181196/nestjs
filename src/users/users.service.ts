@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PasswordStrengthService } from './password-strength.service';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from './dto/user-response.dto';
+import { Role } from './entities/role.enum';
 
 @Injectable()
 export class UsersService {
@@ -32,7 +33,7 @@ export class UsersService {
     if (existingEmail) {
       throw new BadRequestException('Email đã tồn tại');
     }
-  
+
     const passwordStrength = this.passwordStrengthService.checkStrength(createUserDto.password);
     if (passwordStrength.score < 3) {
       throw new BadRequestException('Mật khẩu yếu, hãy chọn một mật khẩu mạnh hơn');
@@ -45,6 +46,7 @@ export class UsersService {
       password: hashedPassword,
       username: lowerCaseUsername,
       email: lowerCaseEmail,
+      role: createUserDto.role || Role.User,
     });
 
     const savedUser = await this.usersRepository.save(newUser);
@@ -72,6 +74,7 @@ export class UsersService {
       .getOne();
   }
 
+  
   async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
@@ -104,8 +107,25 @@ export class UsersService {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, this.saltRounds);
     }
 
+    if (updateUserDto.role) {
+      if (!Object.values(Role).includes(updateUserDto.role)) {
+        throw new BadRequestException('Role không hợp lệ');
+      }
+    }
+
     await this.usersRepository.update(id, updateUserDto);
   }
+
+  async updateRole(id: number, role: Role): Promise<void> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    user.role = role;
+    await this.usersRepository.save(user);
+  }
+
 
   async remove(id: number): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { id } });
