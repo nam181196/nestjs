@@ -58,7 +58,9 @@ export class ProductsService {
   async findAll(findProductsDto: FindProductsDto): Promise<Product[]> {
     const { categoryId, tagIds } = findProductsDto;
 
-    const queryBuilder = this.productsRepository.createQueryBuilder('product');
+    const queryBuilder = this.productsRepository.createQueryBuilder('product')
+    .leftJoinAndSelect('product.category', 'category')
+    .leftJoinAndSelect('product.tags', 'tag');
 
     if (categoryId) {
       queryBuilder.andWhere('product.categoryId = :categoryId', { categoryId });
@@ -66,7 +68,6 @@ export class ProductsService {
 
     if (tagIds && tagIds.length > 0) {
       queryBuilder
-        .leftJoinAndSelect('product.tags', 'tag')
         .andWhere('tag.id IN (:...tagIds)', { tagIds });
     }
 

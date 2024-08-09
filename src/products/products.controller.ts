@@ -26,8 +26,8 @@ export class ProductsController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   async findAll(@Query() query: any) {
-    if (query.tagIds) { 
-      if (typeof query.tagIds === 'string') {  //Nếu là tagIds là mảng -> số nguyên
+    if (query.tagIds) {
+      if (typeof query.tagIds === 'string') {  // Nếu là tagIds là mảng -> số nguyên
         query.tagIds = query.tagIds.split(',').map(id => parseInt(id, 10));
       } else if (!Array.isArray(query.tagIds)) {
         throw new BadRequestException('tagIds must be an array');
