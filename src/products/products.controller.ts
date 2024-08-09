@@ -26,17 +26,17 @@ export class ProductsController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   async findAll(@Query() query: any) {
-    if (typeof query.tagIds === 'string') { //Nếu tagIds là chuỗi -> số nguyên
-      query.tagIds = query.tagIds.split(',').map(id => parseInt(id, 10));
-    } else if (Array.isArray(query.tagIds)) {  //Nếu tagIds là mảng, đảm bảo từng tp trong mảng là số nguyên
-      query.tagIds = query.tagIds.map(id => parseInt(id, 10));
-    } else {
-      throw new BadRequestException('tagIds must be an array');
+    if (query.tagIds) { 
+      if (typeof query.tagIds === 'string') {  //Nếu là tagIds là mảng -> số nguyên
+        query.tagIds = query.tagIds.split(',').map(id => parseInt(id, 10));
+      } else if (!Array.isArray(query.tagIds)) {
+        throw new BadRequestException('tagIds must be an array');
+      }
     }
 
     const findProductsDto = new FindProductsDto();
     Object.assign(findProductsDto, query);
-
+  
     return this.productsService.findAll(findProductsDto);
   }
 

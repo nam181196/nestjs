@@ -19,13 +19,11 @@ export class CategoryController {
   }
 
   @Get()
-  @Roles(Role.Admin)
   async findAll(): Promise<Category[]> {
     return this.categoryService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.Admin)
   async findOne(@Param('id') id: number): Promise<Category> {
     return this.categoryService.findOne(id);
   }
