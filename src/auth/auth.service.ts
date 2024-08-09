@@ -4,6 +4,7 @@ import { UsersService } from '../users/users.service';
 import { AuthPayloadDto } from './dto/auth.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
+import { Role } from 'src/users/entities/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -21,14 +22,19 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { username: user.username, sub: user.id };
+    const payload = { username: user.username, sub: user.id, role: user.role };
     return {
       accessToken: this.jwtService.sign(payload),
     };
   }
 
   async register(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.usersService.create(createUserDto);
+    const newUser = {
+      ...createUserDto,
+      role: createUserDto.role || Role.User,
+    };
+    const user = await this.usersService.create(newUser);
     return user;
   }
 }
+

@@ -1,38 +1,47 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseInterceptors, ClassSerializerInterceptor, Query, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create.dto';
-import { UpdateProductDto } from './dto/update.dto';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Role } from 'src/users/entities/role.enum';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { FindProductsDto } from './dto/find-product.dto';
+import { UpdateTagsDto } from '../tag/dto/update-tags.dto';
 
 @Controller('products')
 @UseInterceptors(ClassSerializerInterceptor)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async create(@Body() createProductDto: CreateProductDto): Promise<ProductResponseDto> {
     const product = await this.productsService.create(createProductDto);
     return new ProductResponseDto(product);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll(@Query('ownerId') ownerId?: string): Promise<ProductResponseDto[]> {
-    const parsedOwnerId = ownerId ? parseInt(ownerId, 10) : undefined;
-
-    if (ownerId && isNaN(parsedOwnerId)) {
-      throw new BadRequestException('Owner ID không hợp lệ');
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async findAll(@Query() query: any) {
+    if (typeof query.tagIds === 'string') { //Nếu tagIds là chuỗi -> số nguyên
+      query.tagIds = query.tagIds.split(',').map(id => parseInt(id, 10));
+    } else if (Array.isArray(query.tagIds)) {  //Nếu tagIds là mảng, đảm bảo từng tp trong mảng là số nguyên
+      query.tagIds = query.tagIds.map(id => parseInt(id, 10));
+    } else {
+      throw new BadRequestException('tagIds must be an array');
     }
 
-    const products = await this.productsService.findAll(parsedOwnerId);
+    const findProductsDto = new FindProductsDto();
+    Object.assign(findProductsDto, query);
 
-    return products.map((product: Partial<ProductResponseDto>) => new ProductResponseDto(product));
+    return this.productsService.findAll(findProductsDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   async findOne(@Param('id') id: string): Promise<ProductResponseDto> {
     const productId = parseInt(id, 10);
     if (isNaN(productId)) {
@@ -42,8 +51,9 @@ export class ProductsController {
     return new ProductResponseDto(product);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch(':id')
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto): Promise<ProductResponseDto> {
     const productId = parseInt(id, 10);
     if (isNaN(productId)) {
@@ -53,8 +63,21 @@ export class ProductsController {
     return new ProductResponseDto(updatedProduct);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Patch(':id/tags')
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async updateTags(@Param('id') id: string, @Body() updateTagsDto: UpdateTagsDto): Promise<ProductResponseDto> {
+    const productId = parseInt(id, 10);
+    if (isNaN(productId)) {
+      throw new BadRequestException('ID không hợp lệ');
+    }
+    const updatedProduct = await this.productsService.updateTags(productId, updateTagsDto);
+    return new ProductResponseDto(updatedProduct);
+  }
+
   @Delete(':id')
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async remove(@Param('id') id: string): Promise<void> {
     const productId = parseInt(id, 10);
     if (isNaN(productId)) {

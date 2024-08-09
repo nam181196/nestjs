@@ -25,7 +25,7 @@ export class ProductResponseDto {
 
   @Type(() => UserResponseDto)
   @Expose()
-  owner: UserResponseDto;
+  ownerId: UserResponseDto;
 
   constructor(partial: Partial<ProductResponseDto>) {
     Object.assign(this, partial);

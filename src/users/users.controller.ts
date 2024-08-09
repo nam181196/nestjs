@@ -38,16 +38,6 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<void> {
-    const userId = parseInt(id, 10);
-    if (isNaN(userId)) {
-      throw new BadRequestException('ID không hợp lệ');
-    }
-    await this.usersService.update(userId, updateUserDto);
-  }
-
   @Patch(':id/role')
   @UseGuards(JwtAuthGuard)
   async updateRole(
@@ -56,6 +46,16 @@ export class UsersController {
   ) {
     await this.usersService.updateRole(id, role);
     return { message: 'Role cập nhật thành công' };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<void> {
+    const userId = parseInt(id, 10);
+    if (isNaN(userId)) {
+      throw new BadRequestException('ID không hợp lệ');
+    }
+    await this.usersService.update(userId, updateUserDto);
   }
 
   @UseGuards(JwtAuthGuard)

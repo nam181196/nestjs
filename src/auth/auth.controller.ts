@@ -4,7 +4,7 @@ import { LocalGuard } from './guards/local.guard';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { RequestWithUser } from 'src/auth/interface/auth.types';
 import { Response } from 'express';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { RegisterUserDto } from 'src/users/dto/register-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -29,8 +29,8 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.register(createUserDto);
+  async register(@Body() registerUserDto: RegisterUserDto) {
+    const user = await this.authService.register(registerUserDto);
     return { message: 'Đăng ký thành công', user };
   }
 

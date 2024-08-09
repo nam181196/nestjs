@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
-import { Product } from './products/entities/product.entity';
-import { User } from './users/entities/user.entity';
+import { TagModule } from './tag/tag.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -26,6 +26,8 @@ import { User } from './users/entities/user.entity';
     ProductsModule,
     UsersModule,
     AuthModule,
+    TagModule,
+    CategoryModule,
   ],
   controllers: [],
   providers: [],
