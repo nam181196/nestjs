@@ -60,23 +60,38 @@ export class ProductsService {
   
     const queryBuilder = this.productsRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.tags', 'tag');  //lấy thông tin tags
+      .leftJoinAndSelect('product.tags', 'tag');
   
     if (tagIds && tagIds.length > 0) {
-      tagIds.forEach((tagId, index) => {
-        queryBuilder.innerJoin(`product.tags`, `tag${index}`, `tag${index}.id = :tagId${index}`, {
-          [`tagId${index}`]: tagId,
-        });
-      });
+      queryBuilder
+        .andWhere((qb) => {
+          const subQuery = qb.subQuery()
+            .select('pt.productId')
+            .from('product_tags_tag', 'pt')
+            .where('pt.tagId IN (:...tagIds)')
+            .groupBy('pt.productId')
+            .having('COUNT(DISTINCT pt.tagId) = :tagCount')
+            .getQuery();
+          return `product.id IN ${subQuery}`;
+        })
+        .setParameter('tagIds', tagIds)
+        .setParameter('tagCount', tagIds.length);
     }
   
     if (categoryId) {
       queryBuilder.andWhere('product.categoryId = :categoryId', { categoryId });
     }
   
-    return queryBuilder.getMany();
-  }
+    const products = await queryBuilder.getMany();
   
+    if (tagIds && tagIds.length > 0) {
+      products.forEach(product => {
+        product.tags = product.tags.filter(tag => tagIds.includes(tag.id));
+      });
+    }
+  
+    return products;
+  }
   
   async findOne(id: number): Promise<Product> {
     const product = await this.productsRepository.findOne({
