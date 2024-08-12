@@ -74,6 +74,29 @@ export class ProductsController {
     const updatedProduct = await this.productsService.updateTags(productId, updateTagsDto);
     return new ProductResponseDto(updatedProduct);
   }
+  @Patch(':id/add-tags')
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async addTags(@Param('id') id: string, @Body() updateTagsDto: UpdateTagsDto): Promise<ProductResponseDto> {
+    const productId = parseInt(id, 10);
+    if (isNaN(productId)) {
+      throw new BadRequestException('ID không hợp lệ');
+    }
+    const updatedProduct = await this.productsService.addTags(productId, updateTagsDto);
+    return new ProductResponseDto(updatedProduct);
+  }
+
+  @Patch(':id/remove-tags')
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async removeTags(@Param('id') id: string, @Body() updateTagsDto: UpdateTagsDto): Promise<ProductResponseDto> {
+    const productId = parseInt(id, 10);
+    if (isNaN(productId)) {
+      throw new BadRequestException('ID không hợp lệ');
+    }
+    const updatedProduct = await this.productsService.removeTags(productId, updateTagsDto);
+    return new ProductResponseDto(updatedProduct);
+  }
 
   @Delete(':id')
   @Roles(Role.Admin)

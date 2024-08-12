@@ -57,23 +57,27 @@ export class ProductsService {
 
   async findAll(findProductsDto: FindProductsDto): Promise<Product[]> {
     const { categoryId, tagIds } = findProductsDto;
-
+  
     const queryBuilder = this.productsRepository.createQueryBuilder('product')
-    .leftJoinAndSelect('product.category', 'category')
-    .leftJoinAndSelect('product.tags', 'tag');
-
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.tags', 'tag');  //lấy thông tin tags
+  
+    if (tagIds && tagIds.length > 0) {
+      tagIds.forEach((tagId, index) => {
+        queryBuilder.innerJoin(`product.tags`, `tag${index}`, `tag${index}.id = :tagId${index}`, {
+          [`tagId${index}`]: tagId,
+        });
+      });
+    }
+  
     if (categoryId) {
       queryBuilder.andWhere('product.categoryId = :categoryId', { categoryId });
     }
-
-    if (tagIds && tagIds.length > 0) {
-      queryBuilder
-        .andWhere('tag.id IN (:...tagIds)', { tagIds });
-    }
-
+  
     return queryBuilder.getMany();
   }
-
+  
+  
   async findOne(id: number): Promise<Product> {
     const product = await this.productsRepository.findOne({
       where: { id },
@@ -98,7 +102,7 @@ export class ProductsService {
     if (name && name.toLowerCase() !== product.name) {
       if (!await this.isProductNameUnique(name, id)) {
         throw new BadRequestException('Sản phẩm với tên này đã tồn tại');
-      }
+      }2
       product.name = name.toLowerCase();
     }
 
@@ -127,6 +131,38 @@ export class ProductsService {
     product.tags = await this.tagsRepository.find({
       where: tagIds.map(id => ({ id })),
     });
+
+    await this.productsRepository.save(product);
+    return this.findOne(id);
+  }
+
+  async addTags(id: number, updateTagsDto: UpdateTagsDto): Promise<Product> {
+    const { tagIds } = updateTagsDto;
+
+    let product = await this.productsRepository.findOne({ where: { id }, relations: ['tags'] });
+    if (!product) {
+      throw new BadRequestException('Sản phẩm không tồn tại');
+    }
+
+    const tagsToAdd = await this.tagsRepository.find({
+      where: tagIds.map(id => ({ id })),
+    });
+
+    product.tags = [...product.tags, ...tagsToAdd];
+
+    await this.productsRepository.save(product);
+    return this.findOne(id);
+  }
+
+  async removeTags(id: number, updateTagsDto: UpdateTagsDto): Promise<Product> {
+    const { tagIds } = updateTagsDto;
+
+    let product = await this.productsRepository.findOne({ where: { id }, relations: ['tags'] });
+    if (!product) {
+      throw new BadRequestException('Sản phẩm không tồn tại');
+    }
+
+    product.tags = product.tags.filter(tag => !tagIds.includes(tag.id));
 
     await this.productsRepository.save(product);
     return this.findOne(id);
